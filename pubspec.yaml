@@ -1,0 +1,31 @@
+
+name: alera
+description: >-
+  Customizable animated alerts for Flutter with six alert types, three styles,
+  transitions, theming, and loading controls.
+version: 1.0.0
+
+homepage: https://github.com/MarCarrera/alera
+repository: https://github.com/MarCarrera/alera
+issue_tracker: https://github.com/MarCarrera/alera/issues
+
+environment:
+  sdk: ^3.9.2
+
+topics:
+  - flutter
+  - alerts
+  - animations
+  - dialogs
+  - ui-components
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
