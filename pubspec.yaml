@@ -3,7 +3,7 @@ name: alera
 description: >-
   Customizable animated alerts for Flutter with six alert types, three styles,
   transitions, theming, and loading controls.
-version: 1.0.0
+version: 1.0.1
 
 homepage: https://github.com/MarCarrera/alera
 repository: https://github.com/MarCarrera/alera
@@ -18,6 +18,20 @@ topics:
   - animations
   - dialogs
   - ui-components
+
+screenshots:
+  - description: Success alert using Classic style.
+    path: screenshots/types/success.jpg
+  - description: Warning alert using Classic style.
+    path: screenshots/types/warning.jpg
+  - description: Error alert using FloatingTop style.
+    path: screenshots/types/error.jpg
+  - description: Fail alert using FloatingTop style.
+    path: screenshots/types/fail.jpg
+  - description: Information alert using CornerBadge style.
+    path: screenshots/types/info.jpg
+  - description: Loading alert using CornerBadge style.
+    path: screenshots/types/loading.jpg
 
 dependencies:
   flutter:

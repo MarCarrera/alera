@@ -6,6 +6,37 @@ Alera is a Flutter package for displaying expressive, customizable animated dial
 
 Designed to integrate with your application's visual identity while keeping alert semantics independent from branding colors.
 
+## Preview
+
+Explore all six alert types and three visual styles included in Alera.
+
+### Alert Types & Visual Styles
+
+| Success · Classic | Warning · Classic | Error · FloatingTop |
+|:---:|:---:|:---:|
+| <img src="screenshots/types/success.jpg" alt="Success alert in Classic style" width="240"> | <img src="screenshots/types/warning.jpg" alt="Warning alert in Classic style" width="240"> | <img src="screenshots/types/error.jpg" alt="Error alert in FloatingTop style" width="240"> |
+
+| Fail · FloatingTop | Info · CornerBadge | Loading · CornerBadge |
+|:---:|:---:|:---:|
+| <img src="screenshots/types/fail.jpg" alt="Fail alert in FloatingTop style" width="240"> | <img src="screenshots/types/info.jpg" alt="Info alert in CornerBadge style" width="240"> | <img src="screenshots/types/loading.jpg" alt="Loading alert in CornerBadge style" width="240"> |
+
+
+### Animations in Action
+
+See Alera's animated icons, transitions, and interactive dialogs.
+
+**Alert animations and visual styles**
+
+[Watch alert animations](https://github.com/MarCarrera/alera/blob/main/screenshots/animations/alera_alerts.mp4)
+
+**Advanced interactions and loading**
+
+[Watch advanced interactions](https://github.com/MarCarrera/alera/blob/main/screenshots/animations/alera_advanced.mp4)
+
+> All demonstrations were recorded using the Alera Flutter example application.
+
+
+
 ## Features
 
 - Six alert types: `success`, `warning`, `error`, `fail`, `info`, and `loading`.

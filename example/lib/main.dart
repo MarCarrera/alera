@@ -1,9 +1,7 @@
 import 'package:alera/alera.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const ExampleApp());
-}
+void main() => runApp(const ExampleApp());
 
 class ExampleApp extends StatelessWidget {
   const ExampleApp({super.key});
@@ -12,917 +10,296 @@ class ExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Animated App Alert Example',
+      title: 'Alera Showcase',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF3F64AD),
-        ),
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3F64AD)),
+        scaffoldBackgroundColor: const Color(0xFFF5F7FB),
       ),
       home: const ExampleHomePage(),
     );
   }
 }
 
-class ExampleHomePage extends StatelessWidget {
+class ExampleHomePage extends StatefulWidget {
   const ExampleHomePage({super.key});
 
-  static const primaryColor = Color(0xFF3F64AD);
-  static const secondColor = Colors.blueGrey;
-  static const thirtyColor = Colors.deepPurple;
+  @override
+  State<ExampleHomePage> createState() => _ExampleHomePageState();
+}
+
+class _ExampleHomePageState extends State<ExampleHomePage> {
+  static const Color _brand = Color(0xFF3F64AD);
+
+  AleraStyle _style = AleraStyle.classic;
+  AleraTransition _transition = AleraTransition.adaptive;
+  int _actionCount = 1;
+  bool _longMessage = false;
+
+  String get _styleName => switch (_style) {
+    AleraStyle.classic => 'Classic',
+    AleraStyle.floatingTop => 'Floating top',
+    AleraStyle.cornerBadge => 'Corner badge',
+  };
+
+  Color get _accent => switch (_style) {
+    AleraStyle.classic => _brand,
+    AleraStyle.floatingTop => Colors.blueGrey,
+    AleraStyle.cornerBadge => Colors.deepPurple,
+  };
+
+  String _titleFor(AleraType type) => switch (type) {
+    AleraType.success => 'Success',
+    AleraType.warning => 'Warning',
+    AleraType.error => 'Connection error',
+    AleraType.fail => 'Operation failed',
+    AleraType.info => 'Information',
+    AleraType.loading => 'Loading',
+  };
+
+  String _messageFor(AleraType type) {
+    if (_longMessage) {
+      return 'This is a longer message to demonstrate how Alera adapts to '
+          'different amounts of content on smaller screens. The dialog '
+          'should remain readable, accessible, and visually balanced even '
+          'when multiple lines of text are displayed.';
+    }
+    return switch (type) {
+      AleraType.success => 'Your changes were saved successfully.',
+      AleraType.warning => 'Please review the information before continuing.',
+      AleraType.error => 'The server could not be reached. Please try again.',
+      AleraType.fail => 'The requested operation could not be completed.',
+      AleraType.info => 'Here is some useful information for you.',
+      AleraType.loading => 'Processing your request...',
+    };
+  }
+
+  List<AleraAction> _actionsFor(AleraType type) {
+    if (_actionCount == 0) return [];
+    if (_actionCount == 1) {
+      return [
+        AleraAction(
+          label: 'OK',
+          isPrimary: true,
+          onPressed: () {},
+        ),
+      ];
+    }
+    return [
+      AleraAction(label: 'Cancel', onPressed: () {}),
+      AleraAction(
+        label: type == AleraType.error ? 'Retry' : 'Continue',
+        isPrimary: true,
+        onPressed: () {},
+      ),
+    ];
+  }
+
+  void _showAlert(AleraType type) {
+    debugPrint('Alera preview: type=$type, actions=$_actionCount, style=$_style');
+    if (type == AleraType.loading) {
+      _showLoading();
+      return;
+    }
+    Alera.show(
+      context,
+      type: type,
+      style: _style,
+      transition: _transition,
+      title: _titleFor(type),
+      message: _messageFor(type),
+      primaryColor: _accent,
+      actions: _actionsFor(type),
+      // With zero actions, users can dismiss by tapping outside.
+      barrierDismissible: _actionCount == 0,
+    );
+  }
+
+  Future<void> _showLoading({bool cancellable = false}) async {
+    final controller = Alera.showLoading(
+      context,
+      style: _style,
+      transition: _transition,
+      title: 'Loading',
+      message: 'Processing your request...',
+      primaryColor: _accent,
+      action: cancellable
+          ? AleraAction(
+              label: 'Cancel',
+              onPressed: () {},
+            )
+          : null,
+    );
+
+    // Close automatically so this showcase never leaves a locked dialog.
+    await Future<void>.delayed(const Duration(seconds: 4));
+    controller.close();
+  }
+
+  Widget _sectionHeading(String title, String description) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 3),
+        Text(description, style: TextStyle(color: Colors.blueGrey.shade700)),
+      ],
+    );
+  }
+
+  Widget _alertTile(AleraType type, IconData icon, Color color) {
+    return OutlinedButton(
+      onPressed: () => _showAlert(type),
+      style: OutlinedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF27344B),
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        side: BorderSide(color: Colors.blueGrey.shade100),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 29),
+          const SizedBox(height: 9),
+          Text(_titleFor(type), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Animated App Alert'),
+        title: const Text('Alera Showcase'),
+        backgroundColor: const Color(0xFFF5F7FB),
+        centerTitle: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
         children: [
-
-          Text('Alerts Style Classic', style: TextStyle(fontSize: 20, color: primaryColor, fontWeight: FontWeight.w600),),
-          const SizedBox(height: 12),
-
-          _ExampleButton(
-            color: primaryColor,
-            label: 'Success',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.success,
-                style: AleraStyle.classic,
-                title: 'Success',
-                message: 'Your operation was completed successfully.',
-                primaryColor: primaryColor,
-                barrierDismissible: false,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            }, 
+          const Text(
+            'Animated alerts for Flutter',
+            style: TextStyle(fontSize: 15, color: Color(0xFF58677D)),
           ),
-
+          const SizedBox(height: 24),
+          _sectionHeading('Visual style', 'Choose a layout for all six alert types.'),
           const SizedBox(height: 12),
-
-          Wrap(
-          spacing: 8,
-          runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Warning A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.classic,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: primaryColor 
-                  );
-                },
-              ),
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Warning B',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.classic,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: primaryColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Ok',
-                        onPressed: () {},
-                      ),
-               
-                    ],
-                  );
-                },
-              ),
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Warning C',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.classic,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: primaryColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Cancel',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
+          SegmentedButton<AleraStyle>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(value: AleraStyle.classic, label: Text('Classic')),
+              ButtonSegment(value: AleraStyle.floatingTop, label: Text('Floating')),
+              ButtonSegment(value: AleraStyle.cornerBadge, label: Text('Corner')),
             ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Error',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.error,
-                     style: AleraStyle.classic,
-                    title: 'Connection error',
-                    message:
-                        'The operation could not be completed because '
-                        'a technical error occurred.',
-                    primaryColor: primaryColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Fail',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.fail,
-                    style: AleraStyle.classic,
-                    title: 'Fail',
-                    message:
-                        'The operation could not be completed because '
-                        'a technical error occurred.',
-                    primaryColor: primaryColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-                  _ExampleButton(
-            color: primaryColor,
-            label: 'Loading A',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.loading,
-                style: AleraStyle.classic,
-                title: 'Loading',
-                message: 'Cargando registro',
-                primaryColor: primaryColor,
-                barrierDismissible: false,
-              );
+            selected: {_style},
+            onSelectionChanged: (selection) {
+              setState(() => _style = selection.first);
             },
           ),
-
-          _ExampleButton(
-            color: primaryColor,
-            label: 'Loading B',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.loading,
-                style: AleraStyle.classic,
-                title: 'Loading',
-                message: 'Cargando registro',
-                primaryColor: primaryColor,
-                barrierDismissible: false,
-                actions: [
-                  AleraAction(
-                    label: 'Cancel',
-                    onPressed: () {
-                      debugPrint('Loading cancelled');
+          const SizedBox(height: 9),
+          Text('Selected: $_styleName', style: const TextStyle(color: Color(0xFF58677D))),
+          const SizedBox(height: 28),
+          _sectionHeading('Alert types', 'Tap an alert to preview it with the selected style and settings. Loading uses its own controller.'),
+          const SizedBox(height: 14),
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.6,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _alertTile(AleraType.success, Icons.check_circle_outline, Colors.green),
+              _alertTile(AleraType.warning, Icons.warning_amber_rounded, Colors.orange),
+              _alertTile(AleraType.error, Icons.error_outline, Colors.red),
+              _alertTile(AleraType.fail, Icons.cancel_outlined, Colors.deepOrange),
+              _alertTile(AleraType.info, Icons.info_outline, Colors.blue),
+              _alertTile(AleraType.loading, Icons.hourglass_top_rounded, Colors.deepPurple),
+            ],
+          ),
+          const SizedBox(height: 30),
+          _sectionHeading('Advanced examples', 'Explore actions, transitions and long messages.'),
+          const SizedBox(height: 14),
+          Card(
+            color: Colors.white,
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Actions', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 0, label: Text('None')),
+                      ButtonSegment(value: 1, label: Text('One')),
+                      ButtonSegment(value: 2, label: Text('Two')),
+                    ],
+                    selected: {_actionCount},
+                    onSelectionChanged: (value) => setState(() => _actionCount = value.first),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Selected: $_actionCount ${_actionCount == 1 ? 'action' : 'actions'} '
+                    '(standard alerts only)',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF58677D)),
+                  ),
+                  const SizedBox(height: 10),
+                  FilledButton.icon(
+                    onPressed: () => _showAlert(AleraType.warning),
+                    icon: const Icon(Icons.visibility_outlined),
+                    label: Text('Preview warning ($_actionCount ${_actionCount == 1 ? 'action' : 'actions'})'),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text('Transition', style: TextStyle(fontWeight: FontWeight.w600)),
+                  DropdownButton<AleraTransition>(
+                    value: _transition,
+                    isExpanded: true,
+                    items: const [
+                      DropdownMenuItem(value: AleraTransition.adaptive, child: Text('Adaptive')),
+                      DropdownMenuItem(value: AleraTransition.fadeScale, child: Text('Fade scale')),
+                      DropdownMenuItem(value: AleraTransition.top, child: Text('Top')),
+                      DropdownMenuItem(value: AleraTransition.bottom, child: Text('Bottom')),
+                      DropdownMenuItem(value: AleraTransition.left, child: Text('Left')),
+                      DropdownMenuItem(value: AleraTransition.right, child: Text('Right')),
+                      DropdownMenuItem(value: AleraTransition.tiltIn, child: Text('Tilt in')),
+                      DropdownMenuItem(value: AleraTransition.forward, child: Text('Forward')),
+                      DropdownMenuItem(value: AleraTransition.none, child: Text('None')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) setState(() => _transition = value);
                     },
                   ),
-                ],
-              );
-            },
-          ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: primaryColor,
-                label: 'Information A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.info,
-                    style: AleraStyle.classic,
-                    title: 'Información',
-                    message: 'Este mensaje no requiere ninguna acción.',
-                    primaryColor: const Color(0xFF3F64AD),
-                  );
-                },
-              ),
-
-               _ExampleButton(
-                color: primaryColor,
-            label: 'Information B',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.classic,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: primaryColor,
-                actions: [
-                  AleraAction(
-                    label: 'Ok',
-                    isPrimary: true,
-                    onPressed: () {},
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Long message'),
+                    subtitle: const Text('Test dialogs with multiple text lines'),
+                    value: _longMessage,
+                    onChanged: (value) => setState(() => _longMessage = value),
+                  ),
+                  const Divider(),
+                  const Text('Loading with cancel action',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: () => _showLoading(cancellable: true),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Preview loading with action'),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Loading previews close automatically after 4 seconds.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF58677D)),
                   ),
                 ],
-              );
-            },
-          ),
-
-          _ExampleButton(
-            color: primaryColor,
-            label: 'Information C',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.classic,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: primaryColor,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: false,
-                    onPressed: () {},
-                  ),
-                  AleraAction(
-                    label: 'Cancel',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-            ],
-          ),
-
-          Divider(),
-          Text('Alerts Style FloatingTop', style: TextStyle(fontSize: 20, color: primaryColor, fontWeight: FontWeight.w600),),
-          const SizedBox(height: 12),
-
-          _ExampleButton(
-            color: secondColor,
-            label: 'Success',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.success,
-                style: AleraStyle.floatingTop,
-                title: 'Success',
-                message: 'Your operation was completed successfully.',
-                primaryColor: secondColor,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: secondColor,
-                label: 'Warning A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.floatingTop,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: secondColor 
-                  );
-                },
               ),
-              _ExampleButton(
-                color: secondColor,
-                label: 'Warning B',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.floatingTop,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: secondColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Ok',
-                        onPressed: () {},
-                      ),
-               
-                    ],
-                  );
-                },
-              ),
-              _ExampleButton(
-                color: secondColor,
-                label: 'Warning C',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.floatingTop,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: secondColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Cancel',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _ExampleButton(
-                color: secondColor,
-                label: 'Error',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.error,
-                     style: AleraStyle.floatingTop,
-                    title: 'Connection error',
-                    message:
-                        'We were unable to complete the operation because the server '
-                        'could not be reached. Please verify your internet connection '
-                        'and try again. If the problem continues, wait a few moments '
-                        'before attempting the operation again. Your information has '
-                        'not been lost and no additional changes were made.',
-                    primaryColor: secondColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              _ExampleButton(
-                color: secondColor,
-                label: 'Fail',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.fail,
-                    style: AleraStyle.floatingTop,
-                    title: 'Fail',
-                    message:
-                        'The operation could not be completed because '
-                        'a technical error occurred.',
-                    primaryColor: secondColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-                _ExampleButton(
-            color: secondColor,
-            label: 'Loading A',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.loading,
-                style: AleraStyle.floatingTop,
-                title: 'Loading',
-                message: 'Cargando registro',
-                primaryColor: secondColor,
-                barrierDismissible: false,
-              );
-            },
-          ),
-
-          _ExampleButton(
-            color: secondColor,
-            label: 'Loading B',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.loading,
-                style: AleraStyle.floatingTop,
-                title: 'Loading',
-                message: 'Cargando registro',
-                primaryColor: secondColor,
-                barrierDismissible: false,
-                actions: [
-                  AleraAction(
-                    label: 'Cancel',
-                    onPressed: () {
-                      debugPrint('Loading cancelled');
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: secondColor,
-                label: 'Information A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.info,
-                    style: AleraStyle.floatingTop,
-                    title: 'Información',
-                    message: 'Este mensaje no requiere ninguna acción.',
-                    primaryColor: secondColor,
-                  );
-                },
-              ),
-
-               _ExampleButton(
-               color: secondColor,
-            label: 'Information B',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.floatingTop,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: secondColor,
-                actions: [
-                  AleraAction(
-                    label: 'Ok',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-
-          _ExampleButton(
-            color: secondColor,
-            label: 'Information C',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.floatingTop,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: secondColor,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: false,
-                    onPressed: () {},
-                  ),
-                  AleraAction(
-                    label: 'Cancel',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-            ],
-          ),
-
-          Divider(),
-
-          Text('Alerts Style CornerBarge', style: TextStyle(fontSize: 20, color: primaryColor, fontWeight: FontWeight.w600),),
-          const SizedBox(height: 12),
-
-          _ExampleButton(
-            color: thirtyColor,
-            label: 'Success',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.success,
-                style: AleraStyle.cornerBadge,
-                transition: AleraTransition.forward,
-                title: 'Success',
-                message: 'Your operation was completed successfully.',
-                primaryColor: thirtyColor,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Warning A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.cornerBadge,
-                    transition: AleraTransition.bottom,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: thirtyColor 
-                  );
-                },
-              ),
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Warning B',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.cornerBadge,
-                    transition: AleraTransition.fadeScale,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: thirtyColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Ok',
-                        onPressed: () {},
-                      ),
-               
-                    ],
-                  );
-                },
-              ),
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Warning C',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.warning,
-                    style: AleraStyle.cornerBadge,
-                    transition: AleraTransition.left,
-                    title: 'Warning',
-                    message: 'Would you like to try again?',
-                    primaryColor: thirtyColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Cancel',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Error',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.error,
-                     style: AleraStyle.cornerBadge,
-                     transition: AleraTransition.right,
-                    title: 'Connection error',
-                    message:
-                        'The operation could not be completed because '
-                        'a technical error occurred.',
-                    primaryColor: thirtyColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Fail',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.fail,
-                    style: AleraStyle.cornerBadge,
-                    transition: AleraTransition.top,
-                    title: 'Fail',
-                    message:
-                        'The operation could not be completed because '
-                        'a technical error occurred.',
-                    primaryColor: thirtyColor,
-                    actions: [
-                      AleraAction(
-                        label: 'Close',
-                        onPressed: () {},
-                      ),
-                      AleraAction(
-                        label: 'Retry',
-                        isPrimary: true,
-                        onPressed: () {},
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-          _ExampleButton(
-            color: thirtyColor,
-            label: 'Loading A',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.loading,
-                style: AleraStyle.cornerBadge,
-                title: 'Loading',
-                message: 'Cargando registro',
-                primaryColor: thirtyColor,
-                barrierDismissible: false,
-              );
-            },
-          ),
-
-         _ExampleButton(
-          color: thirtyColor,
-          label: 'Loading B',
-          onPressed: () async {
-            final loading =
-                Alera.showLoading(
-              context,
-              style:
-                  AleraStyle.cornerBadge,
-                  transition: AleraTransition.tiltIn,
-              title: 'Loading',
-              message: 'Cargando registro',
-              primaryColor:
-                  thirtyColor,
-              action: AleraAction(
-                label: 'Cancel',
-                onPressed: () {
-                  debugPrint(
-                    'Loading cancelled',
-                  );
-                },
-              ),
-            );
-
-            await Future.delayed(
-              const Duration(
-                seconds: 4,
-              ),
-            );
-
-            loading.close();
-          },
-        ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _ExampleButton(
-                color: thirtyColor,
-                label: 'Information A',
-                onPressed: () {
-                  Alera.show(
-                    context,
-                    type: AleraType.info,
-                    style: AleraStyle.cornerBadge,
-                    transition: AleraTransition.adaptive,
-                    title: 'Información',
-                    message: 'This message contains additional information about the operation '
-                    'you are currently performing. Some processes may require more '
-                    'time depending on your network connection and the amount of data '
-                    'being processed. You can continue using the application normally '
-                    'while the requested information is prepared.',
-                    primaryColor: thirtyColor,
-                  );
-                },
-              ),
-
-               _ExampleButton(
-                color: thirtyColor,
-            label: 'Information B',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.cornerBadge,
-                transition: AleraTransition.tiltIn,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: thirtyColor,
-                actions: [
-                  AleraAction(
-                    label: 'Ok',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-
-          _ExampleButton(
-            color: thirtyColor,
-            label: 'Information C',
-            onPressed: () {
-              Alera.show(
-                context,
-                type: AleraType.info,
-                style: AleraStyle.cornerBadge,
-                transition: AleraTransition.none,
-                title: 'Information',
-                message:
-                    'This alert is intended to display general '
-                    'or informative content.',
-                primaryColor: thirtyColor,
-                actions: [
-                  AleraAction(
-                    label: 'Accept',
-                    isPrimary: false,
-                    onPressed: () {},
-                  ),
-                  AleraAction(
-                    label: 'Cancel',
-                    isPrimary: true,
-                    onPressed: () {},
-                  ),
-                ],
-              );
-            },
-          ),
-
-          
-            ],
-          ),
-
-          Divider(),
-         
         ],
       ),
-    );
-  }
-}
-
-class _ExampleButton extends StatelessWidget {
-  const _ExampleButton({
-    required this.label,
-    required this.onPressed,
-    required this.color,
-  });
-
-  final String label;
-  final VoidCallback onPressed;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(color),
-        ),
-        child: Text(label),
-      ),
-      
     );
   }
 }

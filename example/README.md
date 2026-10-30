@@ -103,7 +103,6 @@ AleraTransition.top
 AleraTransition.bottom
 AleraTransition.left
 AleraTransition.right
-AleraTransition.centerReveal
 AleraTransition.forward
 AleraTransition.tiltIn
 AleraTransition.none
