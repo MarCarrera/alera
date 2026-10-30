@@ -2,7 +2,7 @@
 # Changelog
 
 
-## 1.0.1
+## 1.0.2
 
 ### Documentation
 - Added screenshots showcasing all six alert types.
